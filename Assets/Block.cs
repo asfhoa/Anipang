@@ -17,22 +17,27 @@ public class Block : MonoBehaviour
 {
     // 블록은 어떠한 동물인지, 몇번째 index인지, x,y축으로 몇 번 째인지 알아야한다.
     public ANIMAL id;
-    public int index;
-    public int x;
-    public int y;
+    public struct Info
+    {
+        public int index;
+        public int x;
+        public int y;
+
+        public override string ToString()
+        {
+            return $"Block_{index} (x:{x},y:{y})";
+        }
+    }
 
     public Sprite[] animalSprites;
-    private SpriteRenderer spriteRenderer;
+    public Info info;
 
+    private SpriteRenderer spriteRenderer;
+       
     public void Setup(int index, int x, int y)
     {
-        name = $"Block_{index} (x:{x},y:{y})";
-
-        this.index = index;
-        this.x = x;
-        this.y = y;
-
-        // 초기 세팅 함수.
+        info = new Info() { index = index, x = x, y = y };
+        name = info.ToString();
         Change();
     }
     public void Change()
@@ -55,7 +60,7 @@ public class Block : MonoBehaviour
 
     private void OnMouseDown()
     {
-        if (BlockPanel.Instance.IsLockBlock)
+        if(BlockPanel.Instance.IsLockBlock)
             return;
 
         isPressed = true;
@@ -65,32 +70,17 @@ public class Block : MonoBehaviour
     {
         if (BlockPanel.Instance.IsLockBlock || !isPressed)
             return;
-
+        
         // Press한 위치와 현재 위치를 비교해 방향을 판단하고 Swap을 요청한다.
         Vector2 current = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        if (Vector2.Distance(pressPoint, current) >= 0.5f)
+        if(Vector2.Distance(pressPoint, current) >= 0.5f)
         {
             isPressed = false;
             Vector2 dir = current - pressPoint;
             if (Mathf.Abs(dir.x) > Mathf.Abs(dir.y))
-                BlockPanel.Instance.SwapBlock(index, dir.x < 0 ? VECTOR.LEFT : VECTOR.RIGHT);
+                BlockPanel.Instance.SwapBlock(info.index, dir.x < 0 ? VECTOR.LEFT : VECTOR.RIGHT);
             else
-                BlockPanel.Instance.SwapBlock(index, dir.y < 0 ? VECTOR.DOWN : VECTOR.UP);
+                BlockPanel.Instance.SwapBlock(info.index, dir.y < 0 ? VECTOR.DOWN : VECTOR.UP); 
         }
-    }
-
-    public void SwapBlock(Block block)
-    {
-        int tempIndex = block.index;
-        int tempX = block.x;
-        int tempY = block.y;
-
-        block.index = index;
-        block.x = x;
-        block.y = y;
-
-        index = tempIndex;
-        x = tempX;
-        y = tempY;
-    }
+    }        
 }
